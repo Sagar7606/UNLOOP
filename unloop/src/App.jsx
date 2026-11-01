@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   LayoutDashboard,
   CreditCard,
+  Bookmark,
   Plus,
   Search,
   X,
@@ -182,8 +183,14 @@ const accountSeeds = {
   demo: [],
 };
 
+/* -------------------- STORAGE HELPERS -------------------- */
+
 function getAccountStorageKey(accountId) {
   return `unloop-plans-${accountId}`;
+}
+
+function getBookmarksStorageKey(accountId) {
+  return `unloop-bookmarks-${accountId}`;
 }
 
 function loadAccountPlans(accountId) {
@@ -197,8 +204,6 @@ function loadAccountPlans(accountId) {
       return Array.isArray(parsed) ? parsed : [];
     }
 
-    // Preserve existing subscriptions from the original single-account app.
-    // Only migrate them once, and only into User 1.
     if (accountId === "user-1") {
       const oldData = localStorage.getItem("unloop-plans");
 
@@ -219,6 +224,22 @@ function loadAccountPlans(accountId) {
   } catch (error) {
     console.error("Unable to load account data:", error);
     return accountSeeds[accountId] || [];
+  }
+}
+
+function loadAccountBookmarks(accountId) {
+  try {
+    const saved = localStorage.getItem(
+      getBookmarksStorageKey(accountId)
+    );
+
+    if (saved === null) return [];
+
+    const parsed = JSON.parse(saved);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.error("Unable to load bookmarks:", error);
+    return [];
   }
 }
 
@@ -249,7 +270,7 @@ const serviceDomains = {
 };
 
 function getServiceDomain(name) {
-  const normalizedName = name.toLowerCase();
+  const normalizedName = String(name || "").toLowerCase();
 
   const match = Object.keys(serviceDomains).find((service) =>
     normalizedName.includes(service)
@@ -306,7 +327,7 @@ function getNextSevenDays(date) {
 }
 
 function getStatusClass(status) {
-  return status.toLowerCase().replace(/\s+/g, "-");
+  return String(status || "").toLowerCase().replace(/\s+/g, "-");
 }
 
 /* -------------------- COMPANY LOGO -------------------- */
@@ -502,11 +523,9 @@ function AccountSelection({ onSelect, theme, onToggleTheme }) {
 /* -------------------- MAIN APP -------------------- */
 
 function App() {
-  // Active account is deliberately NOT loaded from localStorage.
-  // Therefore every browser refresh starts at the account selection screen.
   const [activeUser, setActiveUser] = useState(null);
-
   const [plans, setPlans] = useState([]);
+  const [bookmarks, setBookmarks] = useState([]);
 
   const [theme, setTheme] = useState(
     () => localStorage.getItem("unloop-theme") || "light"
@@ -518,7 +537,6 @@ function App() {
   const [editingId, setEditingId] = useState(null);
 
   const [search, setSearch] = useState("");
-
   const [form, setForm] = useState(emptyForm);
 
   const [reminders, setReminders] = useState(
@@ -536,9 +554,8 @@ function App() {
   /* -------------------- ACCOUNT HANDLERS -------------------- */
 
   function loginAs(accountId) {
-    const accountPlans = loadAccountPlans(accountId);
-
-    setPlans(accountPlans);
+    setPlans(loadAccountPlans(accountId));
+    setBookmarks(loadAccountBookmarks(accountId));
     setActiveUser(accountId);
     setPage("Overview");
     setSearch("");
@@ -550,6 +567,7 @@ function App() {
   function logout() {
     setActiveUser(null);
     setPlans([]);
+    setBookmarks([]);
     setPage("Overview");
     setSearch("");
     setShowForm(false);
@@ -564,15 +582,19 @@ function App() {
 
     if (!confirmed) return;
 
-    const emptyData = [];
-
     localStorage.setItem(
       getAccountStorageKey("demo"),
-      JSON.stringify(emptyData)
+      JSON.stringify([])
+    );
+
+    localStorage.setItem(
+      getBookmarksStorageKey("demo"),
+      JSON.stringify([])
     );
 
     if (activeUser === "demo") {
-      setPlans(emptyData);
+      setPlans([]);
+      setBookmarks([]);
     }
 
     alert("Demo account has been reset.");
@@ -590,6 +612,15 @@ function App() {
   }, [plans, activeUser]);
 
   useEffect(() => {
+    if (!activeUser) return;
+
+    localStorage.setItem(
+      getBookmarksStorageKey(activeUser),
+      JSON.stringify(bookmarks)
+    );
+  }, [bookmarks, activeUser]);
+
+  useEffect(() => {
     localStorage.setItem("unloop-theme", theme);
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
@@ -601,6 +632,160 @@ function App() {
   useEffect(() => {
     localStorage.setItem("unloop-reminder-days", reminderDays);
   }, [reminderDays]);
+
+  /* -------------------- CHROME EXTENSION BRIDGE -------------------- */
+
+useEffect(() => {
+  function handleExtensionMessage(event) {
+    if (event.source !== window) return;
+
+    const data = event.data;
+
+    if (
+      !data ||
+      data.source !== "UNLOOP_EXTENSION" ||
+      data.type !== "SAVE_BOOKMARK" ||
+      typeof data.requestId !== "string"
+    ) {
+      return;
+    }
+
+    function respond(response) {
+      window.postMessage(
+        {
+          source: "UNLOOP_WEB",
+          type: "UNLOOP_RESPONSE",
+          requestId: data.requestId,
+          response,
+        },
+        window.location.origin
+      );
+    }
+
+    const subscription = data.payload?.subscription;
+
+    const accountMap = {
+      user1: "user-1",
+      user2: "user-2",
+      user3: "user-3",
+      demo: "demo",
+
+      // Also accept IDs already used by the app
+      "user-1": "user-1",
+      "user-2": "user-2",
+      "user-3": "user-3",
+    };
+
+    const targetAccountId =
+      accountMap[subscription?.targetAccountId];
+
+    if (!targetAccountId) {
+      respond({
+        success: false,
+        message: "Please select a valid UNLOOP account.",
+      });
+      return;
+    }
+
+    if (
+      !subscription ||
+      typeof subscription.id !== "string" ||
+      typeof subscription.name !== "string" ||
+      !subscription.name.trim() ||
+      !Number.isFinite(Number(subscription.price)) ||
+      Number(subscription.price) < 0 ||
+      !subscription.nextBillingDate
+    ) {
+      respond({
+        success: false,
+        message: "Invalid subscription details.",
+      });
+      return;
+    }
+
+    const bookmark = {
+      id: subscription.id,
+      name: subscription.name.trim(),
+      planName: subscription.planName || subscription.name,
+      price: Number(subscription.price),
+      currency: subscription.currency || "INR",
+      billingCycle: subscription.billingCycle || "Monthly",
+      nextBillingDate: subscription.nextBillingDate,
+      websiteName: subscription.websiteName || subscription.name,
+      websiteUrl: subscription.websiteUrl || "",
+      source: "Chrome Extension",
+      bookmarkedAt: new Date().toISOString(),
+    };
+
+    try {
+      const storageKey = getBookmarksStorageKey(targetAccountId);
+
+      const existingBookmarks =
+        loadAccountBookmarks(targetAccountId);
+
+      const alreadyExists = existingBookmarks.some(
+        (item) =>
+          item.id === bookmark.id ||
+          (
+            item.websiteUrl &&
+            bookmark.websiteUrl &&
+            item.websiteUrl === bookmark.websiteUrl &&
+            item.name.toLowerCase() === bookmark.name.toLowerCase()
+          )
+      );
+
+      if (alreadyExists) {
+        respond({
+          success: false,
+          message: "This subscription is already bookmarked.",
+        });
+        return;
+      }
+
+      const updatedBookmarks = [
+        bookmark,
+        ...existingBookmarks,
+      ];
+
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify(updatedBookmarks)
+      );
+
+      // Update visible state only if the target account is open.
+      if (activeUser === targetAccountId) {
+        setBookmarks(updatedBookmarks);
+      }
+
+      const account = accounts.find(
+        (item) => item.id === targetAccountId
+      );
+
+      respond({
+        success: true,
+        accountId: targetAccountId,
+        accountName: account?.name || targetAccountId,
+        message: `Bookmark saved to ${account?.name || targetAccountId}.`,
+      });
+    } catch (error) {
+      console.error("Bookmark save failed:", error);
+
+      respond({
+        success: false,
+        message: "Unable to save bookmark in UNLOOP.",
+      });
+    }
+  }
+
+  window.addEventListener("message", handleExtensionMessage);
+
+  return () => {
+    window.removeEventListener(
+      "message",
+      handleExtensionMessage
+    );
+  };
+}, [activeUser]);
 
   /* -------------------- CALCULATIONS -------------------- */
 
@@ -686,9 +871,7 @@ function App() {
   function savePlan(event) {
     event.preventDefault();
 
-    if (!form.name.trim() || form.price === "") {
-      return;
-    }
+    if (!form.name.trim() || form.price === "") return;
 
     const numericPrice = Number(form.price);
 
@@ -730,6 +913,20 @@ function App() {
     if (!confirmed) return;
 
     setPlans((previous) => previous.filter((plan) => plan.id !== id));
+  }
+
+  /* -------------------- BOOKMARK HANDLERS -------------------- */
+
+  function removeBookmark(id) {
+    const confirmed = window.confirm(
+      "Remove this bookmark from your account?"
+    );
+
+    if (!confirmed) return;
+
+    setBookmarks((previous) =>
+      previous.filter((bookmark) => bookmark.id !== id)
+    );
   }
 
   /* -------------------- CSV EXPORT -------------------- */
@@ -796,6 +993,7 @@ function App() {
     const navigation = [
       { name: "Overview", icon: LayoutDashboard },
       { name: "My Subscriptions", icon: CreditCard },
+      { name: "Bookmarks", icon: Bookmark },
       { name: "Settings", icon: Settings },
     ];
 
@@ -855,7 +1053,7 @@ function App() {
 
         <div className="sidebar-footer">
           <span className="footer-dot"></span>
-          UNLOOP v1.0
+          UNLOOP v1.1
         </div>
       </aside>
     );
@@ -1144,9 +1342,7 @@ function App() {
             </div>
           </div>
 
-          <span
-            className={`status-badge ${getStatusClass(plan.status)}`}
-          >
+          <span className={`status-badge ${getStatusClass(plan.status)}`}>
             {plan.status}
           </span>
         </div>
@@ -1308,7 +1504,126 @@ function App() {
     );
   }
 
-  /* -------------------- SETTINGS PAGE -------------------- */
+  /* -------------------- BOOKMARKS PAGE -------------------- */
+
+function BookmarksPage() {
+  return (
+    <>
+      <PageIntro
+        title="Bookmarks"
+        description="Subscriptions saved from your browser extension."
+      />
+
+      <div className="subscription-toolbar">
+        <span className="results-count">
+          {bookmarks.length} bookmark
+          {bookmarks.length !== 1 ? "s" : ""}
+        </span>
+      </div>
+
+      {bookmarks.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-icon">
+            <Bookmark size={38} />
+          </div>
+
+          <h2>No bookmarks yet</h2>
+
+          <p>
+            Open any subscription website, use the UNLOOP Chrome
+            Extension, select your account, and save the subscription
+            to see it here.
+          </p>
+        </div>
+      ) : (
+        <div className="subscription-cards-grid">
+          {bookmarks.map((bookmark) => (
+            <article className="subscription-card" key={bookmark.id}>
+              <div className="subscription-card-header">
+                <div className="subscription-company">
+                  <CompanyLogo
+                    name={bookmark.websiteName || bookmark.name}
+                  />
+
+                  <div>
+                    <h3>{bookmark.name}</h3>
+                    <p>
+                      {bookmark.planName || "Subscription"} · Chrome
+                      Extension
+                    </p>
+                  </div>
+                </div>
+
+                <span className="status-badge active">
+                  Bookmarked
+                </span>
+              </div>
+
+              <div className="subscription-price-section">
+                <div>
+                  <span className="price-caption">
+                    Subscription cost
+                  </span>
+
+                  <div className="subscription-price">
+                    {formatCurrency(bookmark.price)}
+                    <span>
+                      / {(bookmark.billingCycle || "Monthly").toLowerCase()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="subscription-details-grid">
+                <div className="detail-box">
+                  <span>Next Billing Date</span>
+                  <strong>
+                    {formatDate(bookmark.nextBillingDate)}
+                  </strong>
+                </div>
+
+                <div className="detail-box">
+                  <span>Bookmark Date</span>
+                  <strong>
+                    {formatDate(bookmark.bookmarkedAt?.slice(0, 10))}
+                  </strong>
+                </div>
+              </div>
+
+              <div className="subscription-card-footer">
+                {(bookmark.websiteUrl || bookmark.website) ? (
+                  <a
+                    href={bookmark.websiteUrl || bookmark.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="website-link"
+                  >
+                    Visit Website <ExternalLink size={14} />
+                  </a>
+                ) : (
+                  <span className="website-unavailable">
+                    Website not available
+                  </span>
+                )}
+
+                <div className="card-actions">
+                  <button
+                    className="delete-button"
+                    onClick={() => removeBookmark(bookmark.id)}
+                  >
+                    <Trash2 size={15} />
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+    /* -------------------- SETTINGS PAGE -------------------- */
 
   function SettingsPage() {
     return (
@@ -1487,179 +1802,11 @@ function App() {
 
             <div className="about-footer">
               <span>UNLOOP</span>
-              <span>Version 1.0</span>
+              <span>Version 1.1</span>
             </div>
           </section>
         </div>
       </>
-    );
-  }
-
-  /* -------------------- ADD / EDIT MODAL -------------------- */
-
-  function SubscriptionModal() {
-    if (!showForm) return null;
-
-    return (
-      <div className="modal-overlay" onMouseDown={closeForm}>
-        <div
-          className="modal"
-          onMouseDown={(event) => event.stopPropagation()}
-        >
-          <div className="modal-header">
-            <div>
-              <span className="modal-eyebrow">
-                SUBSCRIPTION MANAGEMENT
-              </span>
-
-              <h2>
-                {editingId !== null
-                  ? "Edit Subscription"
-                  : "Add Subscription"}
-              </h2>
-
-              <p>
-                Enter the details of your subscription below.
-              </p>
-            </div>
-
-            <button
-              className="modal-close"
-              onClick={closeForm}
-              aria-label="Close modal"
-            >
-              <X size={20} />
-            </button>
-          </div>
-
-          <form onSubmit={savePlan}>
-            <div className="form-group">
-              <label htmlFor="name">Subscription Name</label>
-
-              <input
-                id="name"
-                name="name"
-                type="text"
-                placeholder="e.g. Netflix, Spotify, Notion"
-                value={form.name}
-                onChange={handleFormChange}
-                required
-              />
-            </div>
-
-            <div className="form-grid">
-              <div className="form-group">
-                <label htmlFor="category">Category</label>
-
-                <select
-                  id="category"
-                  name="category"
-                  value={form.category}
-                  onChange={handleFormChange}
-                >
-                  <option>Entertainment</option>
-                  <option>Music</option>
-                  <option>Productivity</option>
-                  <option>Education</option>
-                  <option>Shopping</option>
-                  <option>Software</option>
-                  <option>Gaming</option>
-                  <option>Storage</option>
-                  <option>Other</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="price">Price (₹)</label>
-
-                <input
-                  id="price"
-                  name="price"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="e.g. 499"
-                  value={form.price}
-                  onChange={handleFormChange}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-grid">
-              <div className="form-group">
-                <label htmlFor="cycle">Billing Cycle</label>
-
-                <select
-                  id="cycle"
-                  name="cycle"
-                  value={form.cycle}
-                  onChange={handleFormChange}
-                >
-                  <option>Monthly</option>
-                  <option>Yearly</option>
-                  <option>Weekly</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="status">Status</label>
-
-                <select
-                  id="status"
-                  name="status"
-                  value={form.status}
-                  onChange={handleFormChange}
-                >
-                  <option>Active</option>
-                  <option>Trial</option>
-                  <option>Paused</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="date">
-                {form.status === "Trial"
-                  ? "Trial End Date"
-                  : "Next Billing Date"}
-              </label>
-
-              <input
-                id="date"
-                name="date"
-                type="date"
-                value={form.date}
-                onChange={handleFormChange}
-              />
-            </div>
-
-            <div className="modal-actions">
-              <button
-                type="button"
-                className="secondary-button"
-                onClick={closeForm}
-              >
-                Cancel
-              </button>
-
-              <button type="submit" className="primary-button">
-                {editingId !== null ? (
-                  <>
-                    <CheckCircle2 size={17} />
-                    Save Changes
-                  </>
-                ) : (
-                  <>
-                    <Plus size={17} />
-                    Add Subscription
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
     );
   }
 
@@ -1693,6 +1840,8 @@ function App() {
 
           {page === "My Subscriptions" && <SubscriptionsPage />}
 
+          {page === "Bookmarks" && <BookmarksPage />}
+
           {page === "Settings" && <SettingsPage />}
 
           <footer className="main-footer">
@@ -1702,7 +1851,168 @@ function App() {
         </div>
       </main>
 
-      <SubscriptionModal />
+      {/* -------------------- ADD / EDIT MODAL -------------------- */}
+      {/* Inline rendering keeps the input mounted while typing. */}
+
+      {showForm && (
+        <div className="modal-overlay" onMouseDown={closeForm}>
+          <div
+            className="modal"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="modal-header">
+              <div>
+                <span className="modal-eyebrow">
+                  SUBSCRIPTION MANAGEMENT
+                </span>
+
+                <h2>
+                  {editingId !== null
+                    ? "Edit Subscription"
+                    : "Add Subscription"}
+                </h2>
+
+                <p>Enter the details of your subscription below.</p>
+              </div>
+
+              <button
+                className="modal-close"
+                onClick={closeForm}
+                aria-label="Close modal"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={savePlan}>
+              <div className="form-group">
+                <label htmlFor="name">Subscription Name</label>
+
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  placeholder="e.g. Netflix, Spotify, Notion"
+                  value={form.name}
+                  onChange={handleFormChange}
+                  required
+                />
+              </div>
+
+              <div className="form-grid">
+                <div className="form-group">
+                  <label htmlFor="category">Category</label>
+
+                  <select
+                    id="category"
+                    name="category"
+                    value={form.category}
+                    onChange={handleFormChange}
+                  >
+                    <option>Entertainment</option>
+                    <option>Music</option>
+                    <option>Productivity</option>
+                    <option>Education</option>
+                    <option>Shopping</option>
+                    <option>Software</option>
+                    <option>Gaming</option>
+                    <option>Storage</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="price">Price (₹)</label>
+
+                  <input
+                    id="price"
+                    name="price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="e.g. 499"
+                    value={form.price}
+                    onChange={handleFormChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-grid">
+                <div className="form-group">
+                  <label htmlFor="cycle">Billing Cycle</label>
+
+                  <select
+                    id="cycle"
+                    name="cycle"
+                    value={form.cycle}
+                    onChange={handleFormChange}
+                  >
+                    <option>Monthly</option>
+                    <option>Yearly</option>
+                    <option>Weekly</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="status">Status</label>
+
+                  <select
+                    id="status"
+                    name="status"
+                    value={form.status}
+                    onChange={handleFormChange}
+                  >
+                    <option>Active</option>
+                    <option>Trial</option>
+                    <option>Paused</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="date">
+                  {form.status === "Trial"
+                    ? "Trial End Date"
+                    : "Next Billing Date"}
+                </label>
+
+                <input
+                  id="date"
+                  name="date"
+                  type="date"
+                  value={form.date}
+                  onChange={handleFormChange}
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={closeForm}
+                >
+                  Cancel
+                </button>
+
+                <button type="submit" className="primary-button">
+                  {editingId !== null ? (
+                    <>
+                      <CheckCircle2 size={17} />
+                      Save Changes
+                    </>
+                  ) : (
+                    <>
+                      <Plus size={17} />
+                      Add Subscription
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,15 +1,28 @@
 {
   "manifest_version": 3,
   "name": "UNLOOP - Subscription Manager",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Track and manage your subscriptions with UNLOOP.",
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "scripting"
   ],
   "host_permissions": [
     "http://localhost:5174/*",
     "https://unloop-tau.vercel.app/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "http://localhost:5174/*",
+        "https://unloop-tau.vercel.app/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
   ],
   "action": {
     "default_popup": "popup.html",
