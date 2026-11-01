@@ -1,109 +1,164 @@
 # UNLOOP
 ### Break Free from Recurring Payments
 
-**UNLOOP** is an AI-powered subscription management platform concept designed to help users track, organise, and manage their recurring subscriptions from one centralised dashboard.
+**UNLOOP** is a subscription management platform that helps users organise, track, and manage recurring subscriptions from a centralised dashboard.
 
-With the increasing use of digital services, users often subscribe to multiple platforms for entertainment, productivity, cloud storage, and other services. Keeping track of renewal dates, recurring expenses, and free-trial periods can become difficult.
+It combines a React-based web application with a Chrome Extension prototype, allowing users to manage subscription information, monitor upcoming renewals, track free trials, and save website-related subscription details.
 
-UNLOOP aims to simplify subscription management by providing a centralised platform that helps users monitor their subscriptions, understand recurring expenses, and stay informed about upcoming renewals.
+UNLOOP also supports multiple separate workspaces, so users can maintain independent subscription records and bookmarks for different accounts.
+
+**Live Website:** https://unloop-tau.vercel.app/  
+**GitHub Repository:** https://github.com/Sagar7606/UNLOOP
 
 ---
 
 ## 1. Problem Statement
 
-Digital subscriptions have become a regular part of everyday life. However, managing multiple subscriptions creates several challenges:
+Managing multiple digital subscriptions can become difficult because:
 
-- Users often forget upcoming renewal dates.
-- Multiple recurring payments make monthly expenses difficult to track.
+- Users may forget upcoming renewal dates.
+- Recurring payments can make monthly expenses difficult to monitor.
 - Free trials may convert into paid subscriptions without users noticing.
-- Subscription details are scattered across different platforms.
+- Subscription information is spread across different websites.
 - Users may continue paying for services they no longer use.
-- Finding cancellation information can be inconvenient.
+- Manually maintaining subscription records can be inconvenient.
 
-UNLOOP aims to address these challenges through a unified subscription management experience.
+UNLOOP aims to simplify this process through a unified subscription management experience.
 
 ---
 
 ## 2. Proposed Solution
 
-UNLOOP provides a centralised dashboard where users can manage subscription information and monitor recurring expenses.
+UNLOOP provides a centralised platform for managing subscription information through a web dashboard and a browser extension.
 
-The platform is designed around three major goals:
+The platform focuses on three main goals:
 
-1. **Track:** Maintain subscription details, prices, billing cycles, and renewal dates.
+1. **Track:** Maintain subscription names, prices, billing cycles, and renewal dates.
 2. **Monitor:** View upcoming renewals, trial deadlines, and recurring expenses.
-3. **Manage:** Organise subscriptions and access relevant cancellation information.
+3. **Manage:** Add, edit, delete, search, organise, and export subscription records.
 
-The project also includes a Chrome Extension prototype intended to make subscription entry and website recognition accessible directly from the browser.
+The Chrome Extension further simplifies the process by recognising website information and allowing users to save subscription-related details to a selected UNLOOP account.
 
 ---
 
 ## 3. Key Features
 
-### A. Subscription Management
+### A. Multiple Account Workspaces
+
+UNLOOP provides four selectable workspaces:
+
+- User 1
+- User 2
+- User 3
+- Demo Login
+
+Each workspace maintains its own subscription records and bookmarks.
+
+The Demo Login starts with an empty dashboard, allowing users to explore the application without using the sample subscription data.
+
+### B. Subscription Management
 
 - Add new subscriptions.
 - Edit existing subscription details.
 - Delete subscriptions.
-- Store subscription names, prices, and billing dates.
-- Search through available subscriptions.
+- Store subscription names and prices.
+- Maintain billing cycle and renewal date information.
+- Search through subscription records.
 
-### B. Dashboard Overview
+### C. Dashboard Overview
 
 The dashboard provides a consolidated view of subscription information, including:
 
 - Total number of subscriptions.
-- Monthly recurring expenses.
-- Upcoming renewal dates.
+- Monthly recurring expense summary.
+- Upcoming renewals.
 - Subscription overview.
-- Trial-related information based on entered dates.
+- Trial-related information.
 
-### C. Upcoming Renewals
+### D. Upcoming Renewals
 
-Users can view upcoming billing dates to stay aware of recurring payments and plan their expenses.
+Users can monitor upcoming billing dates to stay informed about recurring payments.
 
-### D. Trial Tracking
+### E. Trial Tracking
 
 Users can enter trial-related dates and monitor the remaining time before a trial deadline.
 
-### E. Search and Organisation
+### F. Search and Organisation
 
-Users can search their subscription records and access the information they need more easily.
+Users can search their subscription records and access relevant information more easily.
 
-### F. Data Export
+### G. Bookmarks Management
 
-The platform provides CSV export functionality to help users maintain an external copy of their subscription records.
+- Save useful website links.
+- Maintain separate bookmarks for each account.
+- View saved website information.
+- Open bookmarked websites directly.
 
-### G. Dark and Light Mode
+### H. Dark and Light Mode
 
-The interface supports dark and light themes to provide a comfortable user experience.
+The interface supports dark and light themes.
 
-### H. Settings
+### I. Settings
 
-User preferences are maintained locally in the browser.
-
----
-
-## 4. Chrome Extension
-
-UNLOOP also includes a Chrome Extension prototype designed to extend subscription management into the browser.
-
-Its current capabilities include:
-
-- Recognising supported subscription website domains.
-- Identifying platforms such as Netflix, Spotify, Adobe, and YouTube.
-- Allowing users to enter subscription information through a browser popup.
-- Saving subscription records in Chrome's local extension storage.
-
-The extension is designed to become a convenient entry point for subscription management.
-
-**Current limitation:** Website recognition does not verify an active subscription or payment. The user must confirm and enter the subscription details.
-
-Dashboard synchronisation is planned as a future integration.
+Users can manage available application preferences and data-related settings.
 
 ---
 
-## 5. Technology Stack
+## 4. UNLOOP Chrome Extension
+
+The UNLOOP Chrome Extension is designed to connect browser activity with the subscription management dashboard.
+
+Instead of relying only on manually entering website names, the extension can identify the currently opened website and inspect relevant page information.
+
+### Current Capabilities
+
+- Detect the current website name and URL.
+- Read relevant information from the active webpage.
+- Scan page content for subscription-related details.
+- Support extracting information such as plan name, price, billing cycle, and next billing date when available on the page.
+- Allow users to review and select the information they want to save.
+- Provide account selection before saving.
+- Support User 1, User 2, User 3, and Demo Login as destination accounts.
+- Send saved information to the UNLOOP web application through its extension messaging integration.
+
+### Account-Based Saving
+
+The extension is designed around account-specific saving:
+
+1. The user opens a subscription-related webpage.
+2. The extension identifies the current website.
+3. The extension scans the available page content.
+4. The user reviews the detected information.
+5. The user selects the destination UNLOOP account.
+6. The extension sends the selected information to the web application.
+7. The application saves the information under the selected account.
+
+The web application handles the incoming extension message and stores the bookmark under the corresponding account.
+
+**Important:** Page scanning is dependent on the information available in the webpage. The extension cannot independently verify whether a subscription is active, whether a payment has succeeded, or whether the detected billing details are correct. User review is required.
+
+---
+
+## 5. Account-Based Data Management
+
+UNLOOP maintains separate local data for each workspace.
+
+The web application uses account-specific browser storage keys.
+
+| Data | Storage Key Pattern |
+|---|---|
+| Subscription records | `unloop-plans-{accountId}` |
+| Bookmarks | `unloop-bookmarks-{accountId}` |
+
+This approach keeps the subscription and bookmark records of different workspaces separate within the browser.
+
+The application also includes compatibility handling for previously stored subscription data.
+
+**Current implementation:** These are local browser workspaces, not separate authenticated cloud accounts.
+
+---
+
+## 6. Technology Stack
 
 | Technology | Purpose |
 |---|---|
@@ -113,74 +168,91 @@ Dashboard synchronisation is planned as a future integration.
 | HTML5 | Application structure |
 | CSS3 | Interface styling |
 | Lucide React | Interface icons |
-| Browser Local Storage | Website data persistence |
+| Browser Local Storage | Web application data persistence |
 | Chrome Extensions API | Browser extension functionality |
-| Chrome Storage API | Extension-side data storage |
+| Chrome Storage API | Extension-side storage capabilities |
 | Manifest V3 | Chrome extension configuration |
 | Vercel | Website deployment |
-| Git and GitHub | Version control and source code hosting |
+| Git | Version control |
+| GitHub | Source code hosting |
 
 ---
 
-## 6. Project Architecture
+## 7. Project Architecture
 
-The project currently consists of two primary components:
+UNLOOP currently consists of two primary components.
 
-### 1. UNLOOP Web Application
+### 1. Web Application
 
-The React-based web application provides the main subscription management interface.
+The React-based application acts as the main subscription management interface.
 
-Its major responsibilities include:
+Responsibilities:
 
-- Displaying the dashboard.
-- Managing subscription records.
-- Calculating dashboard summaries.
-- Displaying upcoming renewal information.
-- Managing user interface preferences.
-- Exporting subscription data.
+- Account selection.
+- Subscription management.
+- Dashboard statistics.
+- Upcoming renewal information.
+- Trial countdown.
+- Bookmark management.
+- Theme and settings management.
+- Receiving and processing extension messages.
+- Saving data separately for each account.
 
-### 2. UNLOOP Chrome Extension
+### 2. Chrome Extension
 
-The browser extension provides website recognition and a subscription entry form.
+The Chrome Extension provides browser-based website recognition and subscription information collection.
 
-Its major responsibilities include:
+Responsibilities:
 
-- Identifying supported website domains.
-- Displaying the extension popup.
-- Collecting subscription details.
-- Saving records in Chrome local storage.
+- Identifying the active website.
+- Reading relevant webpage information.
+- Scanning available subscription details.
+- Providing a popup interface.
+- Allowing destination account selection.
+- Sending selected information to the web application.
 
-The two components currently maintain separate local data. Connecting them is part of the planned development.
+### 3. Extension-to-Dashboard Communication
 
----
+The extension and web application use a messaging integration.
 
-## 7. How UNLOOP Works
+The web application listens for the `SAVE_BOOKMARK` message and processes the received information.
 
-The current web application follows this workflow:
+The application identifies the selected account, validates the incoming data, checks for duplicate entries, and stores the bookmark under the selected account's storage key.
 
-1. The user opens the UNLOOP dashboard.
-2. The user adds subscription details.
-3. The application stores the information in browser local storage.
-4. Dashboard statistics are calculated from the saved records.
-5. Upcoming renewals and subscription information are displayed.
-6. Users can update, search, delete, or export their records.
-
-The Chrome Extension follows a separate workflow:
-
-1. The user opens a supported website in Chrome.
-2. The extension recognises the website domain.
-3. The user confirms the subscription details.
-4. The user enters the monthly price and next billing date.
-5. The extension saves the record in Chrome local storage.
+This allows extension-saved bookmarks to appear in the corresponding account's dashboard.
 
 ---
 
-## 8. Project Structure
+## 8. How UNLOOP Works
+
+### Web Application Workflow
+
+1. The user opens the UNLOOP website.
+2. The user selects one of the available workspaces.
+3. The dashboard loads the selected account's subscription records and bookmarks.
+4. The user can add, edit, delete, or search subscriptions.
+5. Dashboard summaries are calculated from the saved records.
+6. Upcoming renewals and trial information are displayed.
+
+### Chrome Extension Workflow
+
+1. The user opens a relevant website in Chrome.
+2. The extension identifies the active website and URL.
+3. The extension scans available webpage content.
+4. Subscription-related information is presented for review when detected.
+5. The user selects the destination account.
+6. The extension sends the selected information to the web application.
+7. The web application processes the message and saves the bookmark under the selected account.
+
+---
+
+## 9. Project Structure
 
 ```text
 UNLOOP/
 │
 ├── public/
+│   └── brand-mark.svg
 │
 ├── src/
 │   ├── App.jsx
@@ -194,7 +266,7 @@ UNLOOP/
 │   ├── popup.css
 │   ├── popup.js
 │   ├── background.js
-│   └── README.md
+│   └── content.js
 │
 ├── index.html
 ├── package.json
@@ -204,7 +276,7 @@ UNLOOP/
 
 ---
 
-## 9. Installation and Setup
+## 10. Installation and Setup
 
 ### Prerequisites
 
@@ -213,27 +285,25 @@ UNLOOP/
 - Visual Studio Code
 - Google Chrome
 
-### Run the Web Application
-
-Clone the repository:
+### Clone the Repository
 
 ```bash
 git clone https://github.com/Sagar7606/UNLOOP.git
 ```
 
-Navigate to the project directory:
+### Navigate to the Application Directory
 
 ```bash
 cd UNLOOP/unloop
 ```
 
-Install dependencies:
+### Install Dependencies
 
 ```bash
 npm install
 ```
 
-Start the development server:
+### Start the Development Server
 
 ```bash
 npm run dev
@@ -245,19 +315,25 @@ Open the local URL displayed in the terminal.
 
 1. Open Google Chrome.
 2. Navigate to `chrome://extensions`.
-3. Enable Developer Mode.
+3. Enable **Developer Mode**.
 4. Select **Load unpacked**.
-5. Choose the `chrome-extension` folder.
+5. Select the `chrome-extension` folder.
+6. Pin the UNLOOP extension to the Chrome toolbar if required.
 
-The extension can then be accessed from the Chrome toolbar.
+For extension-to-dashboard communication, keep the UNLOOP web application running and use the configured extension integration.
 
 ---
 
-## 10. Current Implementation Status
+## 11. Current Implementation Status
 
 | Component | Status |
 |---|---|
-| React Dashboard | Implemented |
+| React Web Application | Implemented |
+| UNLOOP Landing Page | Implemented |
+| Multiple Account Selection | Implemented |
+| Separate Account Subscription Data | Implemented |
+| Separate Account Bookmarks | Implemented |
+| Demo Login Workspace | Implemented |
 | Add Subscription | Implemented |
 | Edit Subscription | Implemented |
 | Delete Subscription | Implemented |
@@ -268,11 +344,14 @@ The extension can then be accessed from the Chrome toolbar.
 | Dark/Light Theme | Implemented |
 | CSV Export | Implemented |
 | Local Data Persistence | Implemented |
-| Chrome Extension Popup | Prototype implemented |
-| Website Domain Recognition | Prototype implemented |
-| Extension Subscription Form | Implemented |
-| Extension Local Storage | Implemented |
-| Extension-Dashboard Synchronisation | Pending |
+| Chrome Extension Popup | Implemented |
+| Active Website Information | Extension prototype |
+| Webpage Content Scanning | Extension prototype |
+| Subscription Detail Extraction | Dependent on webpage content |
+| Destination Account Selection | Extension integration |
+| Extension-to-Web App Messaging | Implemented |
+| Account-Specific Bookmark Saving | Implemented |
+| Cloud Database | Not implemented |
 | Email-Based Subscription Detection | Not implemented |
 | Automatic Payment Verification | Not implemented |
 | Automatic Subscription Cancellation | Not implemented |
@@ -280,62 +359,72 @@ The extension can then be accessed from the Chrome toolbar.
 
 ---
 
-## 11. Current Limitations
+## 12. Current Limitations
 
-The current version is a frontend-focused prototype.
+The current version is a browser-based prototype with local data persistence.
 
-- Subscription details are entered manually.
-- Data is stored locally in the browser.
-- The application does not currently connect to users' email accounts.
-- Website recognition does not confirm active paid subscriptions.
-- The Chrome Extension does not yet synchronise records with the main dashboard.
-- The application does not automatically process subscription cancellations.
-- Actual push notifications and cloud-based synchronisation are not implemented.
+- Subscription records are maintained locally.
+- Account workspaces are not protected by individual authentication.
+- Data is not synchronised across different devices.
+- Webpage scanning depends on the structure and content of the active website.
+- Extracted subscription details may require manual correction.
+- Website scanning does not verify actual payment transactions.
+- The application does not connect to email accounts.
+- Automatic subscription cancellation is not available.
+- Cloud-based backup and synchronisation are not implemented.
 
-These limitations define the next stages of development.
+These limitations represent opportunities for future development.
 
 ---
 
-## 12. Future Scope
+## 13. Future Scope
 
-The project can be expanded with the following capabilities:
+### 1. Cloud-Based Data Management
 
-### 1. Chrome Extension Integration
-Connect the extension with the main UNLOOP dashboard so that subscription records can be transferred and synchronised.
+Introduce a secure backend database for persistent storage and synchronisation across devices.
 
-### 2. Email Receipt Detection
-Explore secure email integration to identify subscription-related receipts and recurring payment information.
+### 2. User Authentication
 
-### 3. Renewal Notifications
+Implement individual user registration, login, and secure account management.
+
+### 3. Advanced Browser Integration
+
+Improve webpage scanning and subscription detail extraction across different website structures.
+
+
+### 5. Renewal Notifications
+
 Introduce notifications for upcoming renewals and trial deadlines.
 
-### 4. AI-Based Subscription Insights
-Analyse recurring expenses and provide useful subscription management insights.
+### 6. AI-Based Subscription Insights
 
-### 5. Cancellation Assistance
+Explore intelligent analysis of recurring expenses and personalised subscription insights.
+
+### 7. Cancellation Assistance
+
 Provide direct cancellation links and guided cancellation instructions for supported services.
 
-### 6. Cloud Synchronisation
-Enable secure data synchronisation across multiple devices.
+### 8. Improved Data Synchronisation
 
-### 7. Improved Subscription Detection
-Expand supported platforms and improve the accuracy of subscription-related website recognition.
+Enable reliable communication between the Chrome Extension, web application, and future backend services.
 
 ---
 
-## 13. Project Objective
+## 14. Project Objective
 
 The primary objective of UNLOOP is to make subscription management simpler, more organised, and more transparent.
 
-By combining a centralised web dashboard with browser-based subscription entry, UNLOOP aims to help users understand recurring expenses, stay aware of upcoming renewals, and make better decisions about the services they use.
+By combining a centralised web dashboard with browser-based website recognition and account-specific data management, UNLOOP aims to help users monitor recurring expenses, stay informed about upcoming renewals, and manage their subscriptions more effectively.
 
 ---
 
-## 14. Live Demo and Repository
+## 15. Live Demo and Repository
 
 **Live Website:** https://unloop-tau.vercel.app/
 
 **GitHub Repository:** https://github.com/Sagar7606/UNLOOP
+
+**TWO DEMO WEBSITE FOR TESTING: ** https://ruddy-skill-spring-learn.base44.app/ , https://netflixweb.base44.app
 
 ---
 
