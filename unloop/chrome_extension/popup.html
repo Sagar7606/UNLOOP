@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UNLOOP</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+
+    <header class="header">
+      <div class="brand">
+        <div class="logo">U</div>
+        <div>
+          <h1>UNLOOP</h1>
+          <p>Break Free from Recurring Payments</p>
+        </div>
+      </div>
+      <span class="status-dot"></span>
+    </header>
+
+    <main>
+      <section class="welcome">
+        <p class="eyebrow">SUBSCRIPTION ASSISTANT</p>
+        <h2>Manage your subscriptions.</h2>
+        <p class="description">
+          Keep track of recurring payments and avoid unwanted renewals.
+        </p>
+      </section>
+
+      <section class="detection-card">
+        <div class="card-heading">
+          <span class="icon">◎</span>
+          <span>Current website</span>
+        </div>
+
+        <h3 id="websiteName">Checking website...</h3>
+        <p id="websiteStatus">Identifying the current tab</p>
+
+        <button id="detectButton" class="secondary-button">
+          Detect subscription
+        </button>
+      </section>
+
+      <section class="subscription-card">
+        <div class="card-heading">
+          <span class="icon">＋</span>
+          <span>Add subscription</span>
+        </div>
+
+        <form id="subscriptionForm">
+          <label for="serviceName">Service name</label>
+          <input
+            type="text"
+            id="serviceName"
+            placeholder="e.g. Netflix"
+            required
+          >
+
+          <label for="price">Monthly price (₹)</label>
+          <input
+            type="number"
+            id="price"
+            placeholder="e.g. 649"
+            min="0"
+            step="0.01"
+            required
+          >
+
+          <label for="billingDate">Next billing date</label>
+          <input
+            type="date"
+            id="billingDate"
+            required
+          >
+
+          <button type="submit" class="primary-button">
+            Add to UNLOOP
+          </button>
+        </form>
+
+        <p id="message" class="message" aria-live="polite"></p>
+      </section>
+    </main>
+
+    <footer>
+      <span>UNLOOP Subscription Manager</span>
+      <span>Demo Version 1.0</span>
+    </footer>
+
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

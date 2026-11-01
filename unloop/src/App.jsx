@@ -23,41 +23,204 @@ import {
   Clock3,
   ChevronRight,
   CircleHelp,
+  LogOut,
+  Users,
+  UserRound,
 } from "lucide-react";
 
 import "./App.css";
 
-/* -------------------- INITIAL DATA -------------------- */
+/* -------------------- ACCOUNT CONFIGURATION -------------------- */
 
-const initialPlans = [
+const accounts = [
   {
-    id: 1,
-    name: "Netflix",
-    category: "Entertainment",
-    price: 649,
-    cycle: "Monthly",
-    date: "2026-11-05",
-    status: "Active",
+    id: "user-1",
+    name: "User 1",
+    description: "Personal workspace",
+    initials: "U1",
   },
   {
-    id: 2,
-    name: "Spotify Premium",
-    category: "Music",
-    price: 119,
-    cycle: "Monthly",
-    date: "2026-11-08",
-    status: "Active",
+    id: "user-2",
+    name: "User 2",
+    description: "Personal workspace",
+    initials: "U2",
   },
   {
-    id: 3,
-    name: "Notion Plus",
-    category: "Productivity",
-    price: 800,
-    cycle: "Monthly",
-    date: "2026-11-12",
-    status: "Trial",
+    id: "user-3",
+    name: "User 3",
+    description: "Personal workspace",
+    initials: "U3",
+  },
+  {
+    id: "demo",
+    name: "Demo Login",
+    description: "Explore UNLOOP with an empty dashboard",
+    initials: "D",
   },
 ];
+
+/* -------------------- ACCOUNT INITIAL DATA -------------------- */
+
+const accountSeeds = {
+  "user-1": [
+    {
+      id: 1,
+      name: "Netflix",
+      category: "Entertainment",
+      price: 649,
+      cycle: "Monthly",
+      date: "2026-11-05",
+      status: "Active",
+    },
+    {
+      id: 2,
+      name: "Spotify Premium",
+      category: "Music",
+      price: 119,
+      cycle: "Monthly",
+      date: "2026-11-08",
+      status: "Active",
+    },
+    {
+      id: 3,
+      name: "Notion Plus",
+      category: "Productivity",
+      price: 800,
+      cycle: "Monthly",
+      date: "2026-11-12",
+      status: "Trial",
+    },
+    {
+      id: 4,
+      name: "Amazon Prime",
+      category: "Entertainment",
+      price: 1499,
+      cycle: "Yearly",
+      date: "2026-11-20",
+      status: "Active",
+    },
+  ],
+
+  "user-2": [
+    {
+      id: 1,
+      name: "YouTube Premium",
+      category: "Entertainment",
+      price: 149,
+      cycle: "Monthly",
+      date: "2026-11-06",
+      status: "Active",
+    },
+    {
+      id: 2,
+      name: "Canva Pro",
+      category: "Productivity",
+      price: 500,
+      cycle: "Monthly",
+      date: "2026-11-14",
+      status: "Active",
+    },
+    {
+      id: 3,
+      name: "Disney+ Hotstar",
+      category: "Entertainment",
+      price: 299,
+      cycle: "Monthly",
+      date: "2026-11-22",
+      status: "Trial",
+    },
+  ],
+
+  "user-3": [
+    {
+      id: 1,
+      name: "Netflix",
+      category: "Entertainment",
+      price: 649,
+      cycle: "Monthly",
+      date: "2026-11-04",
+      status: "Active",
+    },
+    {
+      id: 2,
+      name: "Spotify",
+      category: "Music",
+      price: 119,
+      cycle: "Monthly",
+      date: "2026-11-09",
+      status: "Active",
+    },
+    {
+      id: 3,
+      name: "ChatGPT Plus",
+      category: "Productivity",
+      price: 1999,
+      cycle: "Monthly",
+      date: "2026-11-15",
+      status: "Active",
+    },
+    {
+      id: 4,
+      name: "Amazon Prime",
+      category: "Entertainment",
+      price: 1499,
+      cycle: "Yearly",
+      date: "2026-11-19",
+      status: "Active",
+    },
+    {
+      id: 5,
+      name: "Google One",
+      category: "Storage",
+      price: 130,
+      cycle: "Monthly",
+      date: "2026-11-25",
+      status: "Trial",
+    },
+  ],
+
+  demo: [],
+};
+
+function getAccountStorageKey(accountId) {
+  return `unloop-plans-${accountId}`;
+}
+
+function loadAccountPlans(accountId) {
+  const storageKey = getAccountStorageKey(accountId);
+
+  try {
+    const saved = localStorage.getItem(storageKey);
+
+    if (saved !== null) {
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) ? parsed : [];
+    }
+
+    // Preserve existing subscriptions from the original single-account app.
+    // Only migrate them once, and only into User 1.
+    if (accountId === "user-1") {
+      const oldData = localStorage.getItem("unloop-plans");
+
+      if (oldData !== null) {
+        const parsedOldData = JSON.parse(oldData);
+
+        if (Array.isArray(parsedOldData)) {
+          localStorage.setItem(storageKey, JSON.stringify(parsedOldData));
+          return parsedOldData;
+        }
+      }
+    }
+
+    const seed = accountSeeds[accountId] || [];
+    localStorage.setItem(storageKey, JSON.stringify(seed));
+
+    return seed;
+  } catch (error) {
+    console.error("Unable to load account data:", error);
+    return accountSeeds[accountId] || [];
+  }
+}
 
 /* -------------------- SERVICE WEBSITES -------------------- */
 
@@ -244,17 +407,106 @@ const emptyForm = {
   status: "Active",
 };
 
+/* -------------------- ACCOUNT SELECTION SCREEN -------------------- */
+
+function AccountSelection({ onSelect, theme, onToggleTheme }) {
+  return (
+    <div className="account-selection-screen">
+      <div className="account-selection-topbar">
+        <div className="account-brand">
+          <div className="brand-icon">
+            <ShieldCheck size={25} />
+          </div>
+
+          <div className="brand-name">
+            <h2>UNLOOP</h2>
+            <span>Subscription Guardian</span>
+          </div>
+        </div>
+
+        <button
+          className="icon-button"
+          title="Toggle theme"
+          onClick={onToggleTheme}
+        >
+          {theme === "light" ? <Moon size={19} /> : <Sun size={19} />}
+        </button>
+      </div>
+
+      <div className="account-selection-content">
+        <div className="account-welcome-icon">
+          <Users size={30} />
+        </div>
+
+        <span className="account-eyebrow">
+          YOUR SUBSCRIPTIONS, YOUR CONTROL
+        </span>
+
+        <h1>Welcome to UNLOOP</h1>
+
+        <p className="account-subtitle">
+          Select an account to access its subscription dashboard.
+        </p>
+
+        <div className="account-cards">
+          {accounts.map((account, index) => {
+            const subscriptionCount =
+              accountSeeds[account.id]?.length || 0;
+
+            return (
+              <button
+                className={`account-card ${
+                  account.id === "demo" ? "demo-account-card" : ""
+                }`}
+                key={account.id}
+                onClick={() => onSelect(account.id)}
+              >
+                <div className={`account-avatar account-avatar-${index}`}>
+                  {account.id === "demo" ? (
+                    <UserRound size={25} />
+                  ) : (
+                    account.initials
+                  )}
+                </div>
+
+                <div className="account-card-info">
+                  <strong>{account.name}</strong>
+                  <span>{account.description}</span>
+
+                  <small>
+                    {account.id === "demo"
+                      ? "Start with a blank dashboard"
+                      : `${subscriptionCount} sample subscriptions`}
+                  </small>
+                </div>
+
+                <ChevronRight size={20} className="account-card-arrow" />
+              </button>
+            );
+          })}
+        </div>
+
+        <p className="account-selection-footer">
+          <ShieldCheck size={14} />
+          Each account has its own separately saved subscription data.
+        </p>
+      </div>
+
+      <footer className="account-screen-footer">
+        © 2026 UNLOOP · Break Free from Recurring Payments.
+      </footer>
+    </div>
+  );
+}
+
 /* -------------------- MAIN APP -------------------- */
 
 function App() {
-  const [plans, setPlans] = useState(() => {
-    try {
-      const saved = localStorage.getItem("unloop-plans");
-      return saved ? JSON.parse(saved) : initialPlans;
-    } catch {
-      return initialPlans;
-    }
-  });
+  // Active account is deliberately NOT loaded from localStorage.
+  // Therefore every browser refresh starts at the account selection screen.
+  const [activeUser, setActiveUser] = useState(null);
+
+  const [plans, setPlans] = useState([]);
 
   const [theme, setTheme] = useState(
     () => localStorage.getItem("unloop-theme") || "light"
@@ -277,11 +529,65 @@ function App() {
     () => localStorage.getItem("unloop-reminder-days") || "3"
   );
 
+  const selectedAccount = accounts.find(
+    (account) => account.id === activeUser
+  );
+
+  /* -------------------- ACCOUNT HANDLERS -------------------- */
+
+  function loginAs(accountId) {
+    const accountPlans = loadAccountPlans(accountId);
+
+    setPlans(accountPlans);
+    setActiveUser(accountId);
+    setPage("Overview");
+    setSearch("");
+    setShowForm(false);
+    setEditingId(null);
+    setForm(emptyForm);
+  }
+
+  function logout() {
+    setActiveUser(null);
+    setPlans([]);
+    setPage("Overview");
+    setSearch("");
+    setShowForm(false);
+    setEditingId(null);
+    setForm(emptyForm);
+  }
+
+  function resetDemoAccount() {
+    const confirmed = window.confirm(
+      "Reset Demo Login to an empty dashboard?"
+    );
+
+    if (!confirmed) return;
+
+    const emptyData = [];
+
+    localStorage.setItem(
+      getAccountStorageKey("demo"),
+      JSON.stringify(emptyData)
+    );
+
+    if (activeUser === "demo") {
+      setPlans(emptyData);
+    }
+
+    alert("Demo account has been reset.");
+  }
+
   /* -------------------- LOCAL STORAGE -------------------- */
 
   useEffect(() => {
-    localStorage.setItem("unloop-plans", JSON.stringify(plans));
-  }, [plans]);
+    if (!activeUser) return;
+
+    localStorage.setItem(
+      getAccountStorageKey(activeUser),
+      JSON.stringify(plans)
+    );
+  }, [plans, activeUser]);
 
   useEffect(() => {
     localStorage.setItem("unloop-theme", theme);
@@ -306,6 +612,10 @@ function App() {
 
         if (plan.cycle === "Yearly") {
           return total + price / 12;
+        }
+
+        if (plan.cycle === "Weekly") {
+          return total + price * 4.33;
         }
 
         return total + price;
@@ -380,10 +690,17 @@ function App() {
       return;
     }
 
+    const numericPrice = Number(form.price);
+
+    if (!Number.isFinite(numericPrice) || numericPrice < 0) {
+      alert("Please enter a valid subscription price.");
+      return;
+    }
+
     const planData = {
       ...form,
       name: form.name.trim(),
-      price: Number(form.price),
+      price: numericPrice,
     };
 
     if (editingId !== null) {
@@ -441,10 +758,7 @@ function App() {
       plan.status,
     ]);
 
-    const csvContent = [
-      headers,
-      ...rows,
-    ]
+    const csvContent = [headers, ...rows]
       .map((row) =>
         row
           .map((value) => `"${String(value ?? "").replace(/"/g, '""')}"`)
@@ -460,7 +774,7 @@ function App() {
     const link = document.createElement("a");
 
     link.href = url;
-    link.download = "unloop-subscriptions.csv";
+    link.download = `unloop-${activeUser}-subscriptions.csv`;
     link.click();
 
     URL.revokeObjectURL(url);
@@ -468,7 +782,7 @@ function App() {
 
   function clearData() {
     const confirmed = window.confirm(
-      "This will permanently clear all locally saved subscriptions. Continue?"
+      `This will permanently clear subscriptions for ${selectedAccount?.name}. Continue?`
     );
 
     if (!confirmed) return;
@@ -480,18 +794,9 @@ function App() {
 
   function Sidebar() {
     const navigation = [
-      {
-        name: "Overview",
-        icon: LayoutDashboard,
-      },
-      {
-        name: "My Subscriptions",
-        icon: CreditCard,
-      },
-      {
-        name: "Settings",
-        icon: Settings,
-      },
+      { name: "Overview", icon: LayoutDashboard },
+      { name: "My Subscriptions", icon: CreditCard },
+      { name: "Settings", icon: Settings },
     ];
 
     return (
@@ -527,6 +832,7 @@ function App() {
                 >
                   <Icon size={19} />
                   <span>{item.name}</span>
+
                   {page === item.name && (
                     <ChevronRight size={16} className="nav-arrow" />
                   )}
@@ -566,6 +872,11 @@ function App() {
         </div>
 
         <div className="topbar-actions">
+          <div className="current-account-label">
+            <UserRound size={15} />
+            <span>{selectedAccount?.name}</span>
+          </div>
+
           <button
             className="icon-button"
             title="Toggle theme"
@@ -578,7 +889,18 @@ function App() {
             {theme === "light" ? <Moon size={19} /> : <Sun size={19} />}
           </button>
 
-          <div className="topbar-avatar">U</div>
+          <button
+            className="logout-button"
+            onClick={logout}
+            title="Logout / Switch Account"
+          >
+            <LogOut size={16} />
+            <span>Switch Account</span>
+          </button>
+
+          <div className="topbar-avatar">
+            {selectedAccount?.initials || "U"}
+          </div>
         </div>
       </header>
     );
@@ -1090,7 +1412,9 @@ function App() {
 
               <div>
                 <h2>Data Management</h2>
-                <p>Export or clear your locally stored subscription data.</p>
+                <p>
+                  Export or clear subscription data for the current account.
+                </p>
               </div>
             </div>
 
@@ -1108,8 +1432,10 @@ function App() {
 
             <div className="settings-row">
               <div>
-                <strong>Clear All Data</strong>
-                <span>Remove all subscriptions saved in this browser.</span>
+                <strong>Clear Current Account Data</strong>
+                <span>
+                  Remove subscriptions saved for {selectedAccount?.name}.
+                </span>
               </div>
 
               <button className="danger-button" onClick={clearData}>
@@ -1118,10 +1444,26 @@ function App() {
               </button>
             </div>
 
+            {activeUser === "demo" && (
+              <div className="settings-row">
+                <div>
+                  <strong>Reset Demo Account</strong>
+                  <span>Restore the Demo Login dashboard to empty.</span>
+                </div>
+
+                <button
+                  className="secondary-button"
+                  onClick={resetDemoAccount}
+                >
+                  Reset Demo
+                </button>
+              </div>
+            )}
+
             <div className="settings-info">
               <ShieldCheck size={16} />
-              Your current subscription data is stored locally in this
-              browser. Cloud synchronization is not enabled.
+              Each account is stored separately in this browser.
+              Cloud synchronization is not enabled.
             </div>
           </section>
 
@@ -1222,6 +1564,7 @@ function App() {
                   <option>Shopping</option>
                   <option>Software</option>
                   <option>Gaming</option>
+                  <option>Storage</option>
                   <option>Other</option>
                 </select>
               </div>
@@ -1317,6 +1660,22 @@ function App() {
           </form>
         </div>
       </div>
+    );
+  }
+
+  /* -------------------- ACCOUNT SELECTION RENDER -------------------- */
+
+  if (!activeUser) {
+    return (
+      <AccountSelection
+        onSelect={loginAs}
+        theme={theme}
+        onToggleTheme={() =>
+          setTheme((previous) =>
+            previous === "light" ? "dark" : "light"
+          )
+        }
+      />
     );
   }
 
