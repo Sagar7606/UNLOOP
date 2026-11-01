@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -15,7 +16,6 @@ import {
   Trash2,
   Pencil,
   ExternalLink,
-  Download,
   BellRing,
   CalendarDays,
   TrendingUp,
@@ -34,205 +34,80 @@ import "./App.css";
 /* -------------------- ACCOUNT CONFIGURATION -------------------- */
 
 const accounts = [
-  {
-    id: "user-1",
-    name: "User 1",
-    description: "Personal workspace",
-    initials: "U1",
-  },
-  {
-    id: "user-2",
-    name: "User 2",
-    description: "Personal workspace",
-    initials: "U2",
-  },
-  {
-    id: "user-3",
-    name: "User 3",
-    description: "Personal workspace",
-    initials: "U3",
-  },
-  {
-    id: "demo",
-    name: "Demo Login",
-    description: "Explore UNLOOP with an empty dashboard",
-    initials: "D",
-  },
+  { id: "user-1", name: "User 1", description: "Personal workspace", initials: "U1" },
+  { id: "user-2", name: "User 2", description: "Personal workspace", initials: "U2" },
+  { id: "user-3", name: "User 3", description: "Personal workspace", initials: "U3" },
+  { id: "demo", name: "Demo Login", description: "Explore UNLOOP with an empty dashboard", initials: "D" },
 ];
 
-/* -------------------- ACCOUNT INITIAL DATA -------------------- */
+/* -------------------- INITIAL SUBSCRIPTIONS -------------------- */
 
 const accountSeeds = {
   "user-1": [
-    {
-      id: 1,
-      name: "Netflix",
-      category: "Entertainment",
-      price: 649,
-      cycle: "Monthly",
-      date: "2026-11-05",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Spotify Premium",
-      category: "Music",
-      price: 119,
-      cycle: "Monthly",
-      date: "2026-11-08",
-      status: "Active",
-    },
-    {
-      id: 3,
-      name: "Notion Plus",
-      category: "Productivity",
-      price: 800,
-      cycle: "Monthly",
-      date: "2026-11-12",
-      status: "Trial",
-    },
-    {
-      id: 4,
-      name: "Amazon Prime",
-      category: "Entertainment",
-      price: 1499,
-      cycle: "Yearly",
-      date: "2026-11-20",
-      status: "Active",
-    },
+    { id: 1, name: "Netflix", category: "Entertainment", price: 649, cycle: "Monthly", date: "2026-11-05", status: "Active" },
+    { id: 2, name: "Spotify Premium", category: "Music", price: 119, cycle: "Monthly", date: "2026-11-08", status: "Active" },
+    { id: 3, name: "Notion Plus", category: "Productivity", price: 800, cycle: "Monthly", date: "2026-11-12", status: "Trial" },
+    { id: 4, name: "Amazon Prime", category: "Entertainment", price: 1499, cycle: "Yearly", date: "2026-11-20", status: "Active" },
   ],
-
   "user-2": [
-    {
-      id: 1,
-      name: "YouTube Premium",
-      category: "Entertainment",
-      price: 149,
-      cycle: "Monthly",
-      date: "2026-11-06",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Canva Pro",
-      category: "Productivity",
-      price: 500,
-      cycle: "Monthly",
-      date: "2026-11-14",
-      status: "Active",
-    },
-    {
-      id: 3,
-      name: "Disney+ Hotstar",
-      category: "Entertainment",
-      price: 299,
-      cycle: "Monthly",
-      date: "2026-11-22",
-      status: "Trial",
-    },
+    { id: 1, name: "YouTube Premium", category: "Entertainment", price: 149, cycle: "Monthly", date: "2026-11-06", status: "Active" },
+    { id: 2, name: "Canva Pro", category: "Productivity", price: 500, cycle: "Monthly", date: "2026-11-14", status: "Active" },
+    { id: 3, name: "Disney+ Hotstar", category: "Entertainment", price: 299, cycle: "Monthly", date: "2026-11-22", status: "Trial" },
   ],
-
   "user-3": [
-    {
-      id: 1,
-      name: "Netflix",
-      category: "Entertainment",
-      price: 649,
-      cycle: "Monthly",
-      date: "2026-11-04",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Spotify",
-      category: "Music",
-      price: 119,
-      cycle: "Monthly",
-      date: "2026-11-09",
-      status: "Active",
-    },
-    {
-      id: 3,
-      name: "ChatGPT Plus",
-      category: "Productivity",
-      price: 1999,
-      cycle: "Monthly",
-      date: "2026-11-15",
-      status: "Active",
-    },
-    {
-      id: 4,
-      name: "Amazon Prime",
-      category: "Entertainment",
-      price: 1499,
-      cycle: "Yearly",
-      date: "2026-11-19",
-      status: "Active",
-    },
-    {
-      id: 5,
-      name: "Google One",
-      category: "Storage",
-      price: 130,
-      cycle: "Monthly",
-      date: "2026-11-25",
-      status: "Trial",
-    },
+    { id: 1, name: "Netflix", category: "Entertainment", price: 649, cycle: "Monthly", date: "2026-11-04", status: "Active" },
+    { id: 2, name: "Spotify", category: "Music", price: 119, cycle: "Monthly", date: "2026-11-09", status: "Active" },
+    { id: 3, name: "ChatGPT Plus", category: "Productivity", price: 1999, cycle: "Monthly", date: "2026-11-15", status: "Active" },
+    { id: 4, name: "Amazon Prime", category: "Entertainment", price: 1499, cycle: "Yearly", date: "2026-11-19", status: "Active" },
+    { id: 5, name: "Google One", category: "Storage", price: 130, cycle: "Monthly", date: "2026-11-25", status: "Trial" },
   ],
-
   demo: [],
 };
 
 /* -------------------- STORAGE HELPERS -------------------- */
 
-function getAccountStorageKey(accountId) {
-  return `unloop-plans-${accountId}`;
+function getAccountStorageKey(id) {
+  return `unloop-plans-${id}`;
 }
 
-function getBookmarksStorageKey(accountId) {
-  return `unloop-bookmarks-${accountId}`;
+function getBookmarksStorageKey(id) {
+  return `unloop-bookmarks-${id}`;
 }
 
-function loadAccountPlans(accountId) {
-  const storageKey = getAccountStorageKey(accountId);
-
+function loadAccountPlans(id) {
   try {
-    const saved = localStorage.getItem(storageKey);
+    const saved = localStorage.getItem(getAccountStorageKey(id));
 
     if (saved !== null) {
       const parsed = JSON.parse(saved);
       return Array.isArray(parsed) ? parsed : [];
     }
 
-    if (accountId === "user-1") {
+    if (id === "user-1") {
       const oldData = localStorage.getItem("unloop-plans");
 
       if (oldData !== null) {
-        const parsedOldData = JSON.parse(oldData);
+        const parsed = JSON.parse(oldData);
 
-        if (Array.isArray(parsedOldData)) {
-          localStorage.setItem(storageKey, JSON.stringify(parsedOldData));
-          return parsedOldData;
+        if (Array.isArray(parsed)) {
+          localStorage.setItem(getAccountStorageKey(id), JSON.stringify(parsed));
+          return parsed;
         }
       }
     }
 
-    const seed = accountSeeds[accountId] || [];
-    localStorage.setItem(storageKey, JSON.stringify(seed));
-
+    const seed = accountSeeds[id] || [];
+    localStorage.setItem(getAccountStorageKey(id), JSON.stringify(seed));
     return seed;
   } catch (error) {
     console.error("Unable to load account data:", error);
-    return accountSeeds[accountId] || [];
+    return accountSeeds[id] || [];
   }
 }
 
-function loadAccountBookmarks(accountId) {
+function loadAccountBookmarks(id) {
   try {
-    const saved = localStorage.getItem(
-      getBookmarksStorageKey(accountId)
-    );
-
+    const saved = localStorage.getItem(getBookmarksStorageKey(id));
     if (saved === null) return [];
 
     const parsed = JSON.parse(saved);
@@ -270,16 +145,15 @@ const serviceDomains = {
 };
 
 function getServiceDomain(name) {
-  const normalizedName = String(name || "").toLowerCase();
-
+  const normalized = String(name || "").toLowerCase();
   const match = Object.keys(serviceDomains).find((service) =>
-    normalizedName.includes(service)
+    normalized.includes(service)
   );
 
   return match ? serviceDomains[match] : null;
 }
 
-/* -------------------- HELPERS -------------------- */
+/* -------------------- GENERAL HELPERS -------------------- */
 
 function formatCurrency(amount) {
   return new Intl.NumberFormat("en-IN", {
@@ -292,13 +166,10 @@ function formatCurrency(amount) {
 function formatDate(date) {
   if (!date) return "Date not set";
 
-  const parsedDate = new Date(`${date}T00:00:00`);
+  const parsed = new Date(`${date}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return "Date not set";
 
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "Date not set";
-  }
-
-  return parsedDate.toLocaleDateString("en-IN", {
+  return parsed.toLocaleDateString("en-IN", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -312,17 +183,13 @@ function getTrialRemaining(date) {
   today.setHours(0, 0, 0, 0);
 
   const endDate = new Date(`${date}T00:00:00`);
-
   if (Number.isNaN(endDate.getTime())) return null;
 
-  return Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+  return Math.ceil((endDate - today) / 86400000);
 }
 
 function getNextSevenDays(date) {
-  if (!date) return false;
-
   const remaining = getTrialRemaining(date);
-
   return remaining !== null && remaining >= 0 && remaining <= 7;
 }
 
@@ -349,7 +216,7 @@ function CompanyLogo({ name, small = false }) {
           onError={() => setImageError(true)}
         />
       ) : (
-        <span>{name.charAt(0).toUpperCase()}</span>
+        <span>{String(name || "?").charAt(0).toUpperCase()}</span>
       )}
     </div>
   );
@@ -428,7 +295,7 @@ const emptyForm = {
   status: "Active",
 };
 
-/* -------------------- ACCOUNT SELECTION SCREEN -------------------- */
+/* -------------------- ACCOUNT SELECTION -------------------- */
 
 function AccountSelection({ onSelect, theme, onToggleTheme }) {
   return (
@@ -471,8 +338,7 @@ function AccountSelection({ onSelect, theme, onToggleTheme }) {
 
         <div className="account-cards">
           {accounts.map((account, index) => {
-            const subscriptionCount =
-              accountSeeds[account.id]?.length || 0;
+            const count = accountSeeds[account.id]?.length || 0;
 
             return (
               <button
@@ -493,11 +359,10 @@ function AccountSelection({ onSelect, theme, onToggleTheme }) {
                 <div className="account-card-info">
                   <strong>{account.name}</strong>
                   <span>{account.description}</span>
-
                   <small>
                     {account.id === "demo"
                       ? "Start with a blank dashboard"
-                      : `${subscriptionCount} sample subscriptions`}
+                      : `${count} sample subscriptions`}
                   </small>
                 </div>
 
@@ -532,10 +397,8 @@ function App() {
   );
 
   const [page, setPage] = useState("Overview");
-
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
-
   const [search, setSearch] = useState("");
   const [form, setForm] = useState(emptyForm);
 
@@ -582,15 +445,8 @@ function App() {
 
     if (!confirmed) return;
 
-    localStorage.setItem(
-      getAccountStorageKey("demo"),
-      JSON.stringify([])
-    );
-
-    localStorage.setItem(
-      getBookmarksStorageKey("demo"),
-      JSON.stringify([])
-    );
+    localStorage.setItem(getAccountStorageKey("demo"), JSON.stringify([]));
+    localStorage.setItem(getBookmarksStorageKey("demo"), JSON.stringify([]));
 
     if (activeUser === "demo") {
       setPlans([]);
@@ -635,157 +491,146 @@ function App() {
 
   /* -------------------- CHROME EXTENSION BRIDGE -------------------- */
 
-useEffect(() => {
-  function handleExtensionMessage(event) {
-    if (event.source !== window) return;
+  useEffect(() => {
+    function handleExtensionMessage(event) {
+      if (event.source !== window) return;
 
-    const data = event.data;
+      const data = event.data;
 
-    if (
-      !data ||
-      data.source !== "UNLOOP_EXTENSION" ||
-      data.type !== "SAVE_BOOKMARK" ||
-      typeof data.requestId !== "string"
-    ) {
-      return;
-    }
+      if (
+        !data ||
+        data.source !== "UNLOOP_EXTENSION" ||
+        data.type !== "SAVE_BOOKMARK" ||
+        typeof data.requestId !== "string"
+      ) {
+        return;
+      }
 
-    function respond(response) {
-      window.postMessage(
-        {
-          source: "UNLOOP_WEB",
-          type: "UNLOOP_RESPONSE",
-          requestId: data.requestId,
-          response,
-        },
-        window.location.origin
-      );
-    }
+      function respond(response) {
+        window.postMessage(
+          {
+            source: "UNLOOP_WEB",
+            type: "UNLOOP_RESPONSE",
+            requestId: data.requestId,
+            response,
+          },
+          window.location.origin
+        );
+      }
 
-    const subscription = data.payload?.subscription;
+      const subscription = data.payload?.subscription;
 
-    const accountMap = {
-      user1: "user-1",
-      user2: "user-2",
-      user3: "user-3",
-      demo: "demo",
+      const accountMap = {
+        user1: "user-1",
+        user2: "user-2",
+        user3: "user-3",
+        demo: "demo",
+        "user-1": "user-1",
+        "user-2": "user-2",
+        "user-3": "user-3",
+      };
 
-      // Also accept IDs already used by the app
-      "user-1": "user-1",
-      "user-2": "user-2",
-      "user-3": "user-3",
-    };
+      const targetAccountId =
+        accountMap[subscription?.targetAccountId];
 
-    const targetAccountId =
-      accountMap[subscription?.targetAccountId];
-
-    if (!targetAccountId) {
-      respond({
-        success: false,
-        message: "Please select a valid UNLOOP account.",
-      });
-      return;
-    }
-
-    if (
-      !subscription ||
-      typeof subscription.id !== "string" ||
-      typeof subscription.name !== "string" ||
-      !subscription.name.trim() ||
-      !Number.isFinite(Number(subscription.price)) ||
-      Number(subscription.price) < 0 ||
-      !subscription.nextBillingDate
-    ) {
-      respond({
-        success: false,
-        message: "Invalid subscription details.",
-      });
-      return;
-    }
-
-    const bookmark = {
-      id: subscription.id,
-      name: subscription.name.trim(),
-      planName: subscription.planName || subscription.name,
-      price: Number(subscription.price),
-      currency: subscription.currency || "INR",
-      billingCycle: subscription.billingCycle || "Monthly",
-      nextBillingDate: subscription.nextBillingDate,
-      websiteName: subscription.websiteName || subscription.name,
-      websiteUrl: subscription.websiteUrl || "",
-      source: "Chrome Extension",
-      bookmarkedAt: new Date().toISOString(),
-    };
-
-    try {
-      const storageKey = getBookmarksStorageKey(targetAccountId);
-
-      const existingBookmarks =
-        loadAccountBookmarks(targetAccountId);
-
-      const alreadyExists = existingBookmarks.some(
-        (item) =>
-          item.id === bookmark.id ||
-          (
-            item.websiteUrl &&
-            bookmark.websiteUrl &&
-            item.websiteUrl === bookmark.websiteUrl &&
-            item.name.toLowerCase() === bookmark.name.toLowerCase()
-          )
-      );
-
-      if (alreadyExists) {
+      if (!targetAccountId) {
         respond({
           success: false,
-          message: "This subscription is already bookmarked.",
+          message: "Please select a valid UNLOOP account.",
         });
         return;
       }
 
-      const updatedBookmarks = [
-        bookmark,
-        ...existingBookmarks,
-      ];
-
-      localStorage.setItem(
-        storageKey,
-        JSON.stringify(updatedBookmarks)
-      );
-
-      // Update visible state only if the target account is open.
-      if (activeUser === targetAccountId) {
-        setBookmarks(updatedBookmarks);
+      if (
+        !subscription ||
+        typeof subscription.id !== "string" ||
+        typeof subscription.name !== "string" ||
+        !subscription.name.trim() ||
+        !Number.isFinite(Number(subscription.price)) ||
+        Number(subscription.price) < 0 ||
+        !subscription.nextBillingDate
+      ) {
+        respond({
+          success: false,
+          message: "Invalid subscription details.",
+        });
+        return;
       }
 
-      const account = accounts.find(
-        (item) => item.id === targetAccountId
-      );
+      const bookmark = {
+        id: subscription.id,
+        name: subscription.name.trim(),
+        planName: subscription.planName || subscription.name,
+        price: Number(subscription.price),
+        currency: subscription.currency || "INR",
+        billingCycle: subscription.billingCycle || "Monthly",
+        nextBillingDate: subscription.nextBillingDate,
+        websiteName: subscription.websiteName || subscription.name,
+        websiteUrl: subscription.websiteUrl || "",
+        source: "Chrome Extension",
+        bookmarkedAt: new Date().toISOString(),
+      };
 
-      respond({
-        success: true,
-        accountId: targetAccountId,
-        accountName: account?.name || targetAccountId,
-        message: `Bookmark saved to ${account?.name || targetAccountId}.`,
-      });
-    } catch (error) {
-      console.error("Bookmark save failed:", error);
+      try {
+        const storageKey = getBookmarksStorageKey(targetAccountId);
+        const existingBookmarks = loadAccountBookmarks(targetAccountId);
 
-      respond({
-        success: false,
-        message: "Unable to save bookmark in UNLOOP.",
-      });
+        const alreadyExists = existingBookmarks.some(
+          (item) =>
+            item.id === bookmark.id ||
+            (
+              item.websiteUrl &&
+              bookmark.websiteUrl &&
+              item.websiteUrl === bookmark.websiteUrl &&
+              item.name.toLowerCase() === bookmark.name.toLowerCase()
+            )
+        );
+
+        if (alreadyExists) {
+          respond({
+            success: false,
+            message: "This subscription is already bookmarked.",
+          });
+          return;
+        }
+
+        const updatedBookmarks = [bookmark, ...existingBookmarks];
+
+        localStorage.setItem(
+          storageKey,
+          JSON.stringify(updatedBookmarks)
+        );
+
+        if (activeUser === targetAccountId) {
+          setBookmarks(updatedBookmarks);
+        }
+
+        const account = accounts.find(
+          (item) => item.id === targetAccountId
+        );
+
+        respond({
+          success: true,
+          accountId: targetAccountId,
+          accountName: account?.name || targetAccountId,
+          message: `Bookmark saved to ${account?.name || targetAccountId}.`,
+        });
+      } catch (error) {
+        console.error("Bookmark save failed:", error);
+
+        respond({
+          success: false,
+          message: "Unable to save bookmark in UNLOOP.",
+        });
+      }
     }
-  }
 
-  window.addEventListener("message", handleExtensionMessage);
+    window.addEventListener("message", handleExtensionMessage);
 
-  return () => {
-    window.removeEventListener(
-      "message",
-      handleExtensionMessage
-    );
-  };
-}, [activeUser]);
+    return () => {
+      window.removeEventListener("message", handleExtensionMessage);
+    };
+  }, [activeUser]);
 
   /* -------------------- CALCULATIONS -------------------- */
 
@@ -795,13 +640,8 @@ useEffect(() => {
       .reduce((total, plan) => {
         const price = Number(plan.price) || 0;
 
-        if (plan.cycle === "Yearly") {
-          return total + price / 12;
-        }
-
-        if (plan.cycle === "Weekly") {
-          return total + price * 4.33;
-        }
+        if (plan.cycle === "Yearly") return total + price / 12;
+        if (plan.cycle === "Weekly") return total + price * 4.33;
 
         return total + price;
       }, 0);
@@ -815,7 +655,6 @@ useEffect(() => {
 
   const filteredPlans = useMemo(() => {
     const query = search.toLowerCase().trim();
-
     if (!query) return plans;
 
     return plans.filter(
@@ -889,16 +728,15 @@ useEffect(() => {
     if (editingId !== null) {
       setPlans((previous) =>
         previous.map((plan) =>
-          plan.id === editingId ? { ...plan, ...planData } : plan
+          plan.id === editingId
+            ? { ...plan, ...planData }
+            : plan
         )
       );
     } else {
       setPlans((previous) => [
         ...previous,
-        {
-          id: Date.now(),
-          ...planData,
-        },
+        { id: Date.now(), ...planData },
       ]);
     }
 
@@ -912,7 +750,9 @@ useEffect(() => {
 
     if (!confirmed) return;
 
-    setPlans((previous) => previous.filter((plan) => plan.id !== id));
+    setPlans((previous) =>
+      previous.filter((plan) => plan.id !== id)
+    );
   }
 
   /* -------------------- BOOKMARK HANDLERS -------------------- */
@@ -929,53 +769,7 @@ useEffect(() => {
     );
   }
 
-  /* -------------------- CSV EXPORT -------------------- */
-
-  function exportCSV() {
-    if (plans.length === 0) {
-      alert("No subscriptions available to export.");
-      return;
-    }
-
-    const headers = [
-      "Name",
-      "Category",
-      "Price",
-      "Billing Cycle",
-      "Next Billing Date",
-      "Status",
-    ];
-
-    const rows = plans.map((plan) => [
-      plan.name,
-      plan.category,
-      plan.price,
-      plan.cycle,
-      plan.date,
-      plan.status,
-    ]);
-
-    const csvContent = [headers, ...rows]
-      .map((row) =>
-        row
-          .map((value) => `"${String(value ?? "").replace(/"/g, '""')}"`)
-          .join(",")
-      )
-      .join("\n");
-
-    const blob = new Blob([csvContent], {
-      type: "text/csv;charset=utf-8;",
-    });
-
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = `unloop-${activeUser}-subscriptions.csv`;
-    link.click();
-
-    URL.revokeObjectURL(url);
-  }
+  /* -------------------- DATA MANAGEMENT -------------------- */
 
   function clearData() {
     const confirmed = window.confirm(
@@ -1137,7 +931,7 @@ useEffect(() => {
     );
   }
 
-  /* -------------------- OVERVIEW -------------------- */
+  /* -------------------- OVERVIEW PAGE -------------------- */
 
   function OverviewPage() {
     return (
@@ -1506,124 +1300,118 @@ useEffect(() => {
 
   /* -------------------- BOOKMARKS PAGE -------------------- */
 
-function BookmarksPage() {
-  return (
-    <>
-      <PageIntro
-        title="Bookmarks"
-        description="Subscriptions saved from your browser extension."
-      />
+  function BookmarksPage() {
+    return (
+      <>
+        <PageIntro
+          title="Bookmarks"
+          description="Subscriptions saved from your browser extension."
+        />
 
-      <div className="subscription-toolbar">
-        <span className="results-count">
-          {bookmarks.length} bookmark
-          {bookmarks.length !== 1 ? "s" : ""}
-        </span>
-      </div>
+        <div className="subscription-toolbar">
+          <span className="results-count">
+            {bookmarks.length} bookmark
+            {bookmarks.length !== 1 ? "s" : ""}
+          </span>
+        </div>
 
-      {bookmarks.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-icon">
-            <Bookmark size={38} />
+        {bookmarks.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">
+              <Bookmark size={38} />
+            </div>
+
+            <h2>No bookmarks yet</h2>
+
+            <p>
+              Open any subscription website, use the UNLOOP Chrome
+              Extension, select your account, and save the subscription
+              to see it here.
+            </p>
           </div>
+        ) : (
+          <div className="subscription-cards-grid">
+            {bookmarks.map((bookmark) => (
+              <article className="subscription-card" key={bookmark.id}>
+                <div className="subscription-card-header">
+                  <div className="subscription-company">
+                    <CompanyLogo
+                      name={bookmark.websiteName || bookmark.name}
+                    />
 
-          <h2>No bookmarks yet</h2>
+                    <div>
+                      <h3>{bookmark.name}</h3>
+                      <p>
+                        {bookmark.planName || "Subscription"} · Chrome Extension
+                      </p>
+                    </div>
+                  </div>
 
-          <p>
-            Open any subscription website, use the UNLOOP Chrome
-            Extension, select your account, and save the subscription
-            to see it here.
-          </p>
-        </div>
-      ) : (
-        <div className="subscription-cards-grid">
-          {bookmarks.map((bookmark) => (
-            <article className="subscription-card" key={bookmark.id}>
-              <div className="subscription-card-header">
-                <div className="subscription-company">
-                  <CompanyLogo
-                    name={bookmark.websiteName || bookmark.name}
-                  />
+                  <span className="status-badge active">Bookmarked</span>
+                </div>
 
+                <div className="subscription-price-section">
                   <div>
-                    <h3>{bookmark.name}</h3>
-                    <p>
-                      {bookmark.planName || "Subscription"} · Chrome
-                      Extension
-                    </p>
+                    <span className="price-caption">Subscription cost</span>
+
+                    <div className="subscription-price">
+                      {formatCurrency(bookmark.price)}
+                      <span>
+                        / {(bookmark.billingCycle || "Monthly").toLowerCase()}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <span className="status-badge active">
-                  Bookmarked
-                </span>
-              </div>
+                <div className="subscription-details-grid">
+                  <div className="detail-box">
+                    <span>Next Billing Date</span>
+                    <strong>{formatDate(bookmark.nextBillingDate)}</strong>
+                  </div>
 
-              <div className="subscription-price-section">
-                <div>
-                  <span className="price-caption">
-                    Subscription cost
-                  </span>
+                  <div className="detail-box">
+                    <span>Bookmark Date</span>
+                    <strong>
+                      {formatDate(bookmark.bookmarkedAt?.slice(0, 10))}
+                    </strong>
+                  </div>
+                </div>
 
-                  <div className="subscription-price">
-                    {formatCurrency(bookmark.price)}
-                    <span>
-                      / {(bookmark.billingCycle || "Monthly").toLowerCase()}
+                <div className="subscription-card-footer">
+                  {(bookmark.websiteUrl || bookmark.website) ? (
+                    <a
+                      href={bookmark.websiteUrl || bookmark.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="website-link"
+                    >
+                      Visit Website <ExternalLink size={14} />
+                    </a>
+                  ) : (
+                    <span className="website-unavailable">
+                      Website not available
                     </span>
+                  )}
+
+                  <div className="card-actions">
+                    <button
+                      className="delete-button"
+                      onClick={() => removeBookmark(bookmark.id)}
+                    >
+                      <Trash2 size={15} />
+                      Remove
+                    </button>
                   </div>
                 </div>
-              </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </>
+    );
+  }
 
-              <div className="subscription-details-grid">
-                <div className="detail-box">
-                  <span>Next Billing Date</span>
-                  <strong>
-                    {formatDate(bookmark.nextBillingDate)}
-                  </strong>
-                </div>
-
-                <div className="detail-box">
-                  <span>Bookmark Date</span>
-                  <strong>
-                    {formatDate(bookmark.bookmarkedAt?.slice(0, 10))}
-                  </strong>
-                </div>
-              </div>
-
-              <div className="subscription-card-footer">
-                {(bookmark.websiteUrl || bookmark.website) ? (
-                  <a
-                    href={bookmark.websiteUrl || bookmark.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="website-link"
-                  >
-                    Visit Website <ExternalLink size={14} />
-                  </a>
-                ) : (
-                  <span className="website-unavailable">
-                    Website not available
-                  </span>
-                )}
-
-                <div className="card-actions">
-                  <button
-                    className="delete-button"
-                    onClick={() => removeBookmark(bookmark.id)}
-                  >
-                    <Trash2 size={15} />
-                    Remove
-                  </button>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      )}
-    </>
-  );
-}
-    /* -------------------- SETTINGS PAGE -------------------- */
+  /* -------------------- SETTINGS PAGE -------------------- */
 
   function SettingsPage() {
     return (
@@ -1727,22 +1515,8 @@ function BookmarksPage() {
 
               <div>
                 <h2>Data Management</h2>
-                <p>
-                  Export or clear subscription data for the current account.
-                </p>
+                <p>Manage subscription data for the current account.</p>
               </div>
-            </div>
-
-            <div className="settings-row">
-              <div>
-                <strong>Export Subscriptions</strong>
-                <span>Download your subscription list as a CSV file.</span>
-              </div>
-
-              <button className="secondary-button" onClick={exportCSV}>
-                <Download size={16} />
-                Export CSV
-              </button>
             </div>
 
             <div className="settings-row">
@@ -1837,11 +1611,8 @@ function BookmarksPage() {
 
         <div className="page-content">
           {page === "Overview" && <OverviewPage />}
-
           {page === "My Subscriptions" && <SubscriptionsPage />}
-
           {page === "Bookmarks" && <BookmarksPage />}
-
           {page === "Settings" && <SettingsPage />}
 
           <footer className="main-footer">
@@ -1852,7 +1623,6 @@ function BookmarksPage() {
       </main>
 
       {/* -------------------- ADD / EDIT MODAL -------------------- */}
-      {/* Inline rendering keeps the input mounted while typing. */}
 
       {showForm && (
         <div className="modal-overlay" onMouseDown={closeForm}>
