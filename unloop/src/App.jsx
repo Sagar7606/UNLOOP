@@ -297,9 +297,12 @@ const emptyForm = {
 
 /* -------------------- ACCOUNT SELECTION -------------------- */
 
+
 function AccountSelection({ onSelect, theme, onToggleTheme }) {
   return (
     <div className="account-selection-screen">
+
+      {/* TOP BAR */}
       <div className="account-selection-topbar">
         <div className="account-brand">
           <div className="brand-icon">
@@ -317,25 +320,30 @@ function AccountSelection({ onSelect, theme, onToggleTheme }) {
           title="Toggle theme"
           onClick={onToggleTheme}
         >
-          {theme === "light" ? <Moon size={19} /> : <Sun size={19} />}
+          {theme === "light" ? (
+            <Moon size={19} />
+          ) : (
+            <Sun size={19} />
+          )}
         </button>
       </div>
 
+      {/* LANDING PAGE CONTENT */}
       <div className="account-selection-content">
-        <div className="account-welcome-icon">
-          <Users size={30} />
+
+        <div className="landing-brand-heading">
+          <h1>UNLOOP</h1>
+
+          <h2>Take Control of Your Subscriptions.</h2>
+
+          <p>
+            UNLOOP helps you manage all your subscriptions in one place.
+            Track recurring payments, monitor upcoming renewals,
+            manage free trials, and stay in control of your spending.
+          </p>
         </div>
 
-        <span className="account-eyebrow">
-          YOUR SUBSCRIPTIONS, YOUR CONTROL
-        </span>
-
-        <h1>Welcome to UNLOOP</h1>
-
-        <p className="account-subtitle">
-          Select an account to access its subscription dashboard.
-        </p>
-
+        {/* ACCOUNT SELECTION */}
         <div className="account-cards">
           {accounts.map((account, index) => {
             const count = accountSeeds[account.id]?.length || 0;
@@ -359,6 +367,7 @@ function AccountSelection({ onSelect, theme, onToggleTheme }) {
                 <div className="account-card-info">
                   <strong>{account.name}</strong>
                   <span>{account.description}</span>
+
                   <small>
                     {account.id === "demo"
                       ? "Start with a blank dashboard"
@@ -366,21 +375,28 @@ function AccountSelection({ onSelect, theme, onToggleTheme }) {
                   </small>
                 </div>
 
-                <ChevronRight size={20} className="account-card-arrow" />
+                <ChevronRight
+                  size={20}
+                  className="account-card-arrow"
+                />
               </button>
             );
           })}
         </div>
 
+        {/* FOOTER MESSAGE */}
         <p className="account-selection-footer">
           <ShieldCheck size={14} />
           Each account has its own separately saved subscription data.
         </p>
+
       </div>
 
+      {/* PAGE FOOTER */}
       <footer className="account-screen-footer">
         © 2026 UNLOOP · Break Free from Recurring Payments.
       </footer>
+
     </div>
   );
 }
