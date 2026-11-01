@@ -1,3 +1,4 @@
+
 {
   "manifest_version": 3,
   "name": "UNLOOP - Subscription Manager",
@@ -26,7 +27,17 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "UNLOOP"
+    "default_title": "UNLOOP",
+    "default_icon": {
+      "16": "icons/unloop-16.png",
+      "48": "icons/unloop-48.png",
+      "128": "icons/unloop-128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/unloop-16.png",
+    "48": "icons/unloop-48.png",
+    "128": "icons/unloop-128.png"
   },
   "background": {
     "service_worker": "background.js"

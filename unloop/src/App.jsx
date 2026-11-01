@@ -303,7 +303,7 @@ function AccountSelection({ onSelect, theme, onToggleTheme }) {
       <div className="account-selection-topbar">
         <div className="account-brand">
           <div className="brand-icon">
-            <ShieldCheck size={25} />
+            <img src="/brand-mark.svg" alt="UNLOOP" />
           </div>
 
           <div className="brand-name">
@@ -795,7 +795,7 @@ function App() {
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-icon">
-            <ShieldCheck size={25} />
+           <img src="/brand-mark.svg" alt="UNLOOP" />
           </div>
 
           <div className="brand-name">

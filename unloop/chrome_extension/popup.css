@@ -32,17 +32,22 @@ body {
   gap: 11px;
 }
 
+
 .logo {
   width: 39px;
   height: 39px;
-  background: #263b91;
-  color: white;
+  background: #eef6ff;
+  border: 1px solid #d9eaff;
   border-radius: 11px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 23px;
-  font-weight: 800;
+}
+
+.logo img {
+  width: 34px;
+  height: 30px;
+  object-fit: contain;
 }
 
 .brand h1 {
